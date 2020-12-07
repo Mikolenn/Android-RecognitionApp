@@ -2,6 +2,6 @@
 
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <external-path
-        name="my images"
+        name="my_images"
         path="Android/data/com.example.matefacil4/files/Pictures"/>
 </paths>
