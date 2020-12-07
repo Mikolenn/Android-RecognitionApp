@@ -370,16 +370,18 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 txtDisplay = (TextView) findViewById(R.id.txtDisplay);
                 // Read the expression
                 String txt = ocrResultView.getText().toString();
-                // Create an Expression (A class from exp4j library)
-                //Expression expression = new ExpressionBuilder(txt).build();
-                // Calculate the result and display
-                /*
-                double result = expression.evaluate();
-                txtDisplay.setText(Double.toString(result));
 
-                 */
-                String equation=solveEquation(txt);
-                txtDisplay.setText(equation);
+                if(!(txt.contains("="))){
+                    // Create an Expression (A class from exp4j library)
+                    Expression expression = new ExpressionBuilder(txt).build();
+                    // Calculate the result and display
+                    double result = expression.evaluate();
+                    txtDisplay.setText(Double.toString(result));
+
+                } else {
+                    String equation = solveEquation(txt);
+                    txtDisplay.setText(equation);
+                }
             }
         });
     }
@@ -408,7 +410,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
             // For cases such
             // as: x, -x, +x
-            else if (equation.charAt(j) == 'x')
+            else if (equation.charAt(j) == 'x' ||equation.charAt(j) == 'X')
             {
                 if ((i == j) ||
                         equation.charAt(j - 1) == '+')
