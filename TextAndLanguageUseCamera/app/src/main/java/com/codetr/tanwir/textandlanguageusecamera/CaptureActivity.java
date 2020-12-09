@@ -449,11 +449,15 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         double num=0;
         double result;
         String tempo="";
+        String temp="";
         for (int i = 0; i < a.size(); i++) {
             if ((a.get(i).contains("x") || a.get(i).contains("X"))) {
 
                 tempo=a.get(i).replace("x", "");
                 tempo=tempo.replace("X", "");
+                if (tempo==""){
+                    tempo="1";
+                }
                 numvar=numvar+Double.parseDouble(tempo);
 
             }
@@ -466,9 +470,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         for (int i = 0; i < b.size(); i++) {
             if ((b.get(i).contains("x") || b.get(i).contains("X"))) {
 
-                tempo=b.get(i).replace("x", "");
-                tempo=tempo.replace("X", "");
-                numvar=numvar-Double.parseDouble(tempo);
+                temp=b.get(i).replace("x", "");
+                temp=temp.replace("X", "");
+                if (temp=="" || temp==" "){
+                    temp="1";
+                }
+                numvar=numvar-Double.parseDouble(temp);
 
             }
             else{
