@@ -19,6 +19,8 @@ package com.codetr.tanwir.textandlanguageusecamera;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -80,6 +82,8 @@ import org.w3c.dom.Text;
  */
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback,
         ShutterButton.OnShutterButtonListener {
+    String variable;
+    String equation;
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -370,107 +374,128 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 txtDisplay = (TextView) findViewById(R.id.txtDisplay);
                 // Read the expression
                 String txt = ocrResultView.getText().toString();
-                // Create an Expression (A class from exp4j library)
-                //Expression expression = new ExpressionBuilder(txt).build();
-                // Calculate the result and display
-                /*
-                double result = expression.evaluate();
-                txtDisplay.setText(Double.toString(result));
 
-                 */
-                String equation=solveEquation(txt);
-                txtDisplay.setText(equation);
+                if(!(txt.contains("="))){
+                    // Create an Expression (A class from exp4j library)
+                    Expression expression = new ExpressionBuilder(txt).build();
+                    // Calculate the result and display
+                    double result = expression.evaluate();
+                    txtDisplay.setText(Double.toString(result));
+
+                } else {
+                    String equation = presolve(txt);
+                    equation = newsolve(equation);
+                    txtDisplay.setText(equation);
+                }
             }
         });
+    }
+
+    String presolve(String equation){
+        String[] parts = equation.split("=");
+        ArrayList<String> a = split(parts[0]);
+        ArrayList<String> newa = new ArrayList<>();
+        String temp;
+        for (int i = 0; i < a.size(); i++) {
+            if (a.get(i).contains("/") || a.get(i).contains("*")){
+                if (!(a.get(i).contains("x") || a.get(i).contains("X"))) {
+                    Expression expression = new ExpressionBuilder(a.get(i)).build();
+                    newa.add(Double.toString(expression.evaluate()));
+                }
+                else{
+                    newa.add(a.get(i));
+                }
+            }
+            else{
+                newa.add(a.get(i));
+            }
+
+        }
+
+
+        ArrayList<String> b = split(parts[1]);
+        ArrayList<String> newb = new ArrayList<>();
+        for (int i = 0; i < b.size(); i++) {
+            if (b.get(i).contains("/") || b.get(i).contains("*")){
+                if (!(b.get(i).contains("x") || b.get(i).contains("X"))) {
+                    Expression expression = new ExpressionBuilder(b.get(i)).build();
+                    newb.add(Double.toString(expression.evaluate()));
+                }
+                else{
+                    newb.add(b.get(i));
+                }
+            }
+            else{
+                newb.add(b.get(i));
+            }
+
+        }
+
+
+
+
+        return getSolution(newa,newb).replace(" ", "");
     }
 
 
     // Function to solve
 // the given equation
-    String solveEquation(String equation)
-    {
-        int n = equation.length(),
-                sign = 1, coeff = 0;
-        int total = 0, i = 0;
 
-        // Traverse the equation
-        for (int j = 0; j < n; j++)
-        {
-            if (equation.charAt(j) == '+' ||
-                    equation.charAt(j) == '-')
-            {
-                if (j > i)
-                    total += sign *
-                            Integer.parseInt(
-                                    equation.substring(i, j));
-                i = j;
+    String newsolve(String equation) {
+        String[] parts = equation.split("=");
+        ArrayList<String> a = split(parts[0]);
+        ArrayList<String> b = split(parts[1]);
+        double numvar=0;
+        double num=0;
+        double result;
+        String tempo="";
+        for (int i = 0; i < a.size(); i++) {
+            if ((a.get(i).contains("x") || a.get(i).contains("X"))) {
+
+                tempo=a.get(i).replace("x", "");
+                tempo=tempo.replace("X", "");
+                numvar=numvar+Double.parseDouble(tempo);
+
             }
+            else{
+                num=num+Double.parseDouble(a.get(i));
 
-            // For cases such
-            // as: x, -x, +x
-            else if (equation.charAt(j) == 'x')
-            {
-                if ((i == j) ||
-                        equation.charAt(j - 1) == '+')
-                    coeff += sign;
-
-                else if (equation.charAt(j - 1) == '-')
-                    coeff -= sign;
-
-                else
-                    coeff += sign *
-                            Integer.parseInt(
-                                    equation.substring(i, j));
-                i = j + 1;
-            }
-
-            // Flip sign once
-            // '=' is seen
-            else if (equation.charAt(j) == '=')
-            {
-                if (j > i)
-                    total += sign *
-                            Integer.parseInt(
-                                    equation.substring(i, j));
-                sign = -1;
-                i = j + 1;
             }
         }
 
-        // There may be a
-        // number left in the end
-        if (i < n)
-            total = total +
-                    sign *
-                            Integer.parseInt(
-                                    equation.substring(i));
+        for (int i = 0; i < b.size(); i++) {
+            if ((b.get(i).contains("x") || b.get(i).contains("X"))) {
 
-        // For infinite
-        // solutions
-        if (coeff == 0 &&
-                total == 0)
-            return "Infinite solutions";
+                tempo=b.get(i).replace("x", "");
+                tempo=tempo.replace("X", "");
+                numvar=numvar-Double.parseDouble(tempo);
 
-        // For no solution
-        if (coeff == 0 &&
-                total != 0)
-            return "No solution";
+            }
+            else{
+                num=num-Double.parseDouble(b.get(i));
 
-        // x = total sum / coeff
-        // of x '-' sign indicates
-        // moving numeric value to
-        // right hand side
-        int ans = -total / coeff;
-        return (Integer.toString(ans));
+            }
+        }
+
+        if (numvar==0) {
+            if (num==0){
+                return("Soluciones infinitas");
+            }
+            else {
+                return("Sin solucion");
+            }
+
+        }
+        else{
+            result=-1*(num/numvar);
+            return (""+result);
+        }
+
+
+
     }
-    /*
-    // Driver code
-    public static void main(String args[])
-    {
-        String equation = new String("x+5-3+x=6+x-2");
-        //equation=("x = " + solveEquation(equation));
-    }
-     */
+
+
 
 
     @Override
@@ -506,6 +531,319 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             // We already have the engine initialized, so just start the camera.
             resumeOCR();
         }
+    }
+
+    /**
+     *Split a given expression into its components.
+     *
+     * @param equation The equation to split
+     * @return ArrayList of the components in equation
+     */
+    public ArrayList<String> split(String equation) {
+        String expression = "";
+        ArrayList<String> splitedEquation = new ArrayList();
+        boolean isInsideBracket = false;
+
+        for (int i = 0; i < equation.length(); i++) {
+            String chr = Character.toString(equation.charAt(i));
+
+
+            if ((chr.equals("+") || chr.equals("-")) && i != 0 && !isInsideBracket) {
+                splitedEquation.add(expression);
+                expression = chr;
+
+            } else {
+                expression +=chr;
+            }
+
+            if (chr.equals("(")) {
+                isInsideBracket = true;
+            } else if (chr.equals(")")) {
+                isInsideBracket = false;
+            }
+        }
+        splitedEquation.add(expression);
+
+        return splitedEquation;
+    }
+
+    /**
+     * Checks if an expression contains a bracket.
+     *
+     * @param expression
+     * @return boolean
+     */
+    public boolean containsBracket(String expression) {
+        return  expression.contains("(");
+    }
+
+    public String getExprInBracket(String expr) {
+        String exprInBracket = "";
+        for (int i =0; i < expr.length() - 1; i++) {
+            exprInBracket +=expr.charAt(i);
+        }
+
+        return exprInBracket;
+    }
+
+    /**
+     * It expands an expression with bracket e.g it turns 2(5x-8) => 10x - 16
+     *
+     * @param expression The expression to expand
+     * @return a string with the evaluated form of the expression
+     */
+
+    /**
+     * It expands an expression with bracket e.g it turns 2(5x-8) => 10x - 16
+     *
+     * @param expression The expression to expand
+     * @return a string with the evaluated form of the expression
+     */
+    public ArrayList<String> expand(String expression) {
+
+        String[] expr = expression.split("[(]");
+
+        int multiplier = expr[0].equals("-") || expr[0].equals("+") ? Integer.parseInt(expr[0] + "1") : Integer.parseInt(expr[0]);
+        ArrayList<String> result = new ArrayList<>();
+
+        ArrayList<String> exprInBracket = split(getExprInBracket(expr[1]));
+
+        for (int i =0; i < exprInBracket.size(); i++) {
+            String elem = exprInBracket.get(i);
+            try {
+                Integer constant = multiplier * Integer.parseInt(elem);
+                result.add(constant.toString());
+            } catch(Exception e) {
+                Integer newCoefficient = getCoefficient(elem) * multiplier;
+                Log.d("VARIABLE", variable);
+                result.add(newCoefficient.toString() + variable);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * It removes and evaluates components with bracket. e.g It turns ['2x', 2(x-8)] to ['2x', '2x', '-8']
+     *
+     * @param equationComponents equation components
+     * @return
+     */
+    public ArrayList<String> openBracket(ArrayList<String> equationComponents) {
+        ArrayList<String> eqtComponents = new ArrayList<>();
+        for (int i = 0; i < equationComponents.size(); i++) {
+
+            if (containsBracket(equationComponents.get(i))) {
+                eqtComponents.addAll(expand(equationComponents.get(i)));
+            } else {
+                eqtComponents.add(equationComponents.get(i));
+            }
+
+        }
+
+        return eqtComponents;
+    }
+
+    public String getSolutionVar(String var) {
+        char firstChar = var.charAt(0);
+        if (Character.toString(firstChar).equals("+")) {
+            return var.replace("+", "+ ");
+        } else if (Character.toString(firstChar).equals("-")) {
+            return var.replace("-", "- ");
+        } else {
+            return "+ " + var;
+        }
+    }
+
+    /**
+     * It merges the right and left hand side of the equation components
+     *
+     * @param leftHandSide(List) The left hand side of the equation in a list
+     * @param rightHandSide(List) Contains the components on the right hand side of the equation in a list
+     *
+     * @return String The string that contain the simplified equation
+     */
+    public String getSolution(ArrayList<String> leftHandSide, ArrayList<String> rightHandSide) {
+        String leftHandSideSolution = "";
+        String rightHandSideSolution = "";
+        System.out.println(leftHandSide);
+
+        for (int i=0; i < leftHandSide.size(); i++) {
+            if (i == 0) {
+                leftHandSideSolution = leftHandSide.get(0);
+            } else {
+                leftHandSideSolution = leftHandSideSolution + " " + getSolutionVar(leftHandSide.get(i));
+            }
+        }
+
+        for (int i=0; i < rightHandSide.size(); i++) {
+            if (i == 0) {
+                rightHandSideSolution = rightHandSide.get(0);
+            } else {
+                rightHandSideSolution = rightHandSideSolution + " " + getSolutionVar(rightHandSide.get(i));
+            }
+        }
+        return leftHandSideSolution + " = " + rightHandSideSolution;
+    }
+
+    public String changeVariableSign(String variable) {
+        char firstChar = variable.charAt(0);
+        if (Character.toString(firstChar).equals("+")){
+            return variable.replace("+", "-");
+        } else if (Character.toString(firstChar).equals("-")) {
+            return variable.replace("-", "+");
+        } else {
+            return "-" + variable;
+        }
+    }
+
+    /**
+     * It Collect like terms.
+     *
+     * @param leftHandSide The left hand side of the equation
+     * @param rightHandSide The right hand side of the equation
+     * @return Array with variables and constants seperately
+     */
+    public ArrayList<String>[] collectLikeTerms(ArrayList<String> leftHandSide, ArrayList<String> rightHandSide) {
+        ArrayList<String> variables = new ArrayList<>();
+        ArrayList<String> constants = new ArrayList<>();
+
+        for (int i = 0; i < leftHandSide.size(); i++) {
+            String elem = leftHandSide.get(i);
+            try {
+                Integer constant =  -1 * Integer.parseInt(elem);
+                constants.add(constant.toString());
+            } catch(Exception e) {
+                variables.add(elem);
+            }
+        }
+
+        for (int j = 0; j < rightHandSide.size(); j++) {
+            String elem = rightHandSide.get(j);
+            try {
+                Integer constant =  Integer.parseInt(elem);
+                constants.add(constant.toString());
+            } catch(Exception e) {
+                variables.add(changeVariableSign(elem));
+            }
+        }
+
+        ArrayList<String>[] result = new ArrayList[2];
+        result[0] = variables;
+        result[1] = constants;
+        return result;
+    }
+
+    /**
+     * Gets the coefficient of a variable (as the name implies)
+     *
+     * @param variable
+     * @return int the coefficient of the variable
+     */
+    public static int getCoefficient(String variable){
+        String coefficient = "";
+        if(variable.length() == 1) return 1;
+        else if(variable.length() == 2 && variable.charAt(0) == '-') return -1;
+
+        for(int i = 0; i < variable.length(); i++){
+            if(Character.isDigit(variable.charAt(i)))coefficient+=variable.charAt(i);
+        }
+        if(variable.charAt(0) == '-')return Integer.parseInt("-" + coefficient);
+        return Integer.parseInt(coefficient);
+    }
+
+    /**
+     * It simplify an expression. eg from [2x, +3x] into 5x
+     *
+     * @param expression The components in of an expression in an array e.g [2x, 4x, -5x]
+     * @return String that holds the simplified expression
+     */
+    public String simplifyExpression(ArrayList<String> expression) {
+        Integer coefficient = 0;
+        for (int i = 0; i < expression.size(); i++) {
+            coefficient += getCoefficient(expression.get(i));
+        }
+
+        if (coefficient == 1) return variable;
+        if (coefficient == -1) return "-" + variable;
+
+        return coefficient.toString(coefficient) + variable;
+    }
+
+    /**
+     * Add up all the constants
+     *
+     * @param constants ArrayList of constants
+     * @return String
+     */
+
+    public String simplifyConstants(ArrayList<String> constants) {
+
+        Integer constantSum = 0;
+        for (int i = 0; i < constants.size(); i++) {
+            constantSum += Integer.parseInt(constants.get(i));
+        }
+
+        return constantSum.toString();
+    }
+
+
+    public String solve(String equation) {
+
+        equation = equation.replaceAll("\\s+",""); //removing all spaces from equation
+
+        //Paso 1 terminado
+
+        String[] divEquation = equation.split("=");
+
+        String leftHandSide = divEquation[0]; // The left handside of the equation
+        String rightHandSide = divEquation[1];
+        ArrayList<String> leftHandSideComps = split(leftHandSide);
+        ArrayList<String> rightHandSideComps = split(rightHandSide);
+
+
+
+        ArrayList<String>[] likeTerms = collectLikeTerms(leftHandSideComps, rightHandSideComps);
+
+        leftHandSideComps = likeTerms[0]; // Now holds the variables.
+        rightHandSideComps = likeTerms[1]; // Now holds the constants.
+
+        equation=getSolution(leftHandSideComps, rightHandSideComps);
+        //Paso 3
+
+        String variableSum = simplifyExpression(leftHandSideComps);
+        String constantSum = simplifyConstants(rightHandSideComps);
+        Integer coef = getCoefficient(variableSum);
+
+        equation=variableSum + " = " + constantSum;
+        //paso4
+
+
+        if (variableSum.equals(variable)) {
+            equation=variable + " = " + constantSum;
+            //Ultimo paso si ya se despejo
+            return equation;
+        }
+
+        if (coef == -1) {
+            constantSum = Integer.toString(Integer.parseInt(constantSum) * -1);
+            equation= variable + " = " + constantSum;
+            //ultimo paso
+            return equation;
+        }
+        float constant = Float.parseFloat(constantSum)/coef;
+
+        DecimalFormat df = new DecimalFormat("0.00");
+
+        equation=variableSum + "/" + coef.toString() + " = " + constantSum + "/" + coef.toString();
+
+        if (coef == 0) {
+            equation=variable + " = " + "NAN or undefined";
+            return equation;
+        }
+
+
+        return variable + " = " + df.format(constant);
     }
 
     /**
