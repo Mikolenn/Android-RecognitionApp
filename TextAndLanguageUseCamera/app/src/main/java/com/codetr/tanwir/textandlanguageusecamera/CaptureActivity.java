@@ -17,41 +17,30 @@
 
 package com.codetr.tanwir.textandlanguageusecamera;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -63,15 +52,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.googlecode.tesseract.android.TessBaseAPI;
-
 import com.codetr.tanwir.textandlanguageusecamera.camera.CameraManager;
 import com.codetr.tanwir.textandlanguageusecamera.camera.ShutterButton;
+import com.googlecode.tesseract.android.TessBaseAPI;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
-import org.w3c.dom.Text;
+import java.io.File;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -376,20 +367,41 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 String txt = ocrResultView.getText().toString();
 
                 if(!(txt.contains("="))){
-                    // Create an Expression (A class from exp4j library)
-                    Expression expression = new ExpressionBuilder(txt).build();
-                    // Calculate the result and display
-                    double result = expression.evaluate();
+                    try {
+                        CharSequence label = "labelfunc";
+                        // Create an Expression (A class from exp4j library)
+                        Expression expression = new ExpressionBuilder(txt).build();
+                        // Calculate the result and display
+                        double result = expression.evaluate();
 
-                    String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
-                    txtDisplay.setText(translated);
+                        String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
+                        txtDisplay.setText(translated);
+
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText(label, translated);
+                        clipboard.setPrimaryClip(clip);
+                    }
+                    catch (Exception e){
+                        txtDisplay.setText("Error");
+                    }
 
                 } else {
-                    String equation = presolve(txt);
-                    equation = newsolve(equation);
+                    try {
+                        CharSequence label = "labeleq";
+                        String equation = presolve(txt);
+                        equation = newsolve(equation);
 
-                    String translated = LaTexTranslate.translateEquation(txt, equation);
-                    txtDisplay.setText(translated);
+                        String translated = LaTexTranslate.translateEquation(txt, equation);
+                        txtDisplay.setText(translated);
+
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText(label, translated);
+                        clipboard.setPrimaryClip(clip);
+                    }
+                    catch (Exception e) {
+                        txtDisplay.setText("Error");
+                    }
+
                 }
             }
         });
@@ -407,7 +419,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     newa.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newa.add(a.get(i));
+                    newa.add(a.get(i).replace("*",""));
                 }
             }
             else{
@@ -425,7 +437,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     newb.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newb.add(b.get(i));
+                    newb.add(b.get(i).replace("*",""));
                 }
             }
             else{
