@@ -8,6 +8,7 @@ public class LaTexTranslate {
      */
     public static String translateEquation(String equation, String result){
 
+        equation = equation.replaceAll("X", "x");
         String translated = "\\begin{align*} \n    ";
 
         for (int i=0; i < equation.length(); i++){
