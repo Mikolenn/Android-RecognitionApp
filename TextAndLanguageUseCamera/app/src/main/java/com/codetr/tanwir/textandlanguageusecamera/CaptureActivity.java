@@ -376,20 +376,31 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 String txt = ocrResultView.getText().toString();
 
                 if(!(txt.contains("="))){
-                    // Create an Expression (A class from exp4j library)
-                    Expression expression = new ExpressionBuilder(txt).build();
-                    // Calculate the result and display
-                    double result = expression.evaluate();
+                    try {
+                        // Create an Expression (A class from exp4j library)
+                        Expression expression = new ExpressionBuilder(txt).build();
+                        // Calculate the result and display
+                        double result = expression.evaluate();
 
-                    String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
-                    txtDisplay.setText(translated);
+                        String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
+                        txtDisplay.setText(translated);
+                    }
+                    catch (Exception e){
+                        txtDisplay.setText("Error");
+                    }
 
                 } else {
-                    String equation = presolve(txt);
-                    equation = newsolve(equation);
+                    try {
+                        String equation = presolve(txt);
+                        equation = newsolve(equation);
 
-                    String translated = LaTexTranslate.translateEquation(txt, equation);
-                    txtDisplay.setText(translated);
+                        String translated = LaTexTranslate.translateEquation(txt, equation);
+                        txtDisplay.setText(translated);
+                    }
+                    catch (Exception e) {
+                        txtDisplay.setText("Error");
+                    }
+
                 }
             }
         });
@@ -407,7 +418,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     newa.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newa.add(a.get(i));
+                    newa.add(a.get(i).replace("*",""));
                 }
             }
             else{
@@ -425,7 +436,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     newb.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newb.add(b.get(i));
+                    newb.add(b.get(i).replace("*",""));
                 }
             }
             else{
