@@ -442,7 +442,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 // the given equation
 
     String newsolve(String equation) {
-        String[] parts = equation.split("=");
+        String[] parts = equation.split("=", 2);
         ArrayList<String> a = split(parts[0]);
         ArrayList<String> b = split(parts[1]);
         double numvar=0;
@@ -450,37 +450,54 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         double result;
         String tempo="";
         String temp="";
+        String prueba="";
+
         for (int i = 0; i < a.size(); i++) {
             if ((a.get(i).contains("x") || a.get(i).contains("X"))) {
-
                 tempo=a.get(i).replace("x", "");
                 tempo=tempo.replace("X", "");
-                if (tempo==""){
-                    tempo="1";
+
+                if (tempo.equals("+") || tempo.equals("")){
+                    tempo="+1";
+                    //prueba=prueba+temp;
+                }
+                else if (tempo.equals("-")) {
+                    tempo="-1";
+                    //prueba=prueba+temp;
                 }
                 numvar=numvar+Double.parseDouble(tempo);
+                //prueba = prueba + temp;
+
 
             }
             else{
-                num=num+Double.parseDouble(a.get(i));
 
+                num=num+Double.parseDouble(a.get(i));
+                prueba=prueba+a.get(i);
             }
         }
 
         for (int i = 0; i < b.size(); i++) {
             if ((b.get(i).contains("x") || b.get(i).contains("X"))) {
-
                 temp=b.get(i).replace("x", "");
                 temp=temp.replace("X", "");
-                if (temp=="" || temp==" "){
-                    temp="1";
+
+                if (temp.equals("+") || temp.equals("")){
+                    temp="+1";
+                    //prueba=prueba+temp;
+                }
+                else if (temp.equals("-")) {
+                    temp="-1";
+                    //prueba=prueba+temp;
                 }
                 numvar=numvar-Double.parseDouble(temp);
+                //prueba = prueba + temp;
+
 
             }
             else{
                 num=num-Double.parseDouble(b.get(i));
-
+                //prueba=prueba+b.get(i);
             }
         }
 
