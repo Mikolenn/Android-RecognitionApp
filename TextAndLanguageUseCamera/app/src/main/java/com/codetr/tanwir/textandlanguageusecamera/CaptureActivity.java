@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,7 +42,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
@@ -376,38 +377,71 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 String txt = ocrResultView.getText().toString();
 
                 if(!(txt.contains("="))){
-                    // Create an Expression (A class from exp4j library)
-                    Expression expression = new ExpressionBuilder(txt).build();
-                    // Calculate the result and display
-                    double result = expression.evaluate();
+                    try {
 
-                    String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
-                    txtDisplay.setText(translated);
+                        CharSequence label = "labelfunc";
+                        // Create an Expression (A class from exp4j library)
+                        Expression expression = new ExpressionBuilder(txt).build();
+                        // Calculate the result and display
+                        double result = expression.evaluate();
+
+                        String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
+                        txtDisplay.setText(translated);
+
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText(label, translated);
+                        clipboard.setPrimaryClip(clip);
+                    }
+                    catch (Exception e){
+                        txtDisplay.setText("Error");
+                    }
 
                 } else {
-                    String equation = presolve(txt);
-                    equation = newsolve(equation);
+                    try {
+                        CharSequence label = "labeleq";
+                        String equation = presolve(txt);
+                        equation = newsolve(equation);
 
-                    String translated = LaTexTranslate.translateEquation(txt, equation);
-                    txtDisplay.setText(translated);
+                        String translated = LaTexTranslate.translateEquation(txt, equation);
+                        txtDisplay.setText(translated);
+
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText(label, translated);
+                        clipboard.setPrimaryClip(clip);
+                    }
+                    catch (Exception e) {
+                        txtDisplay.setText("Error");
+                    }
+
                 }
             }
         });
     }
 
     String presolve(String equation){
+        equation=equation.replaceAll("X", "x");
         String[] parts = equation.split("=");
         ArrayList<String> a = split(parts[0]);
         ArrayList<String> newa = new ArrayList<>();
         String temp;
         for (int i = 0; i < a.size(); i++) {
             if (a.get(i).contains("/") || a.get(i).contains("*")){
-                if (!(a.get(i).contains("x") || a.get(i).contains("X"))) {
+                if (!(a.get(i).contains("x"))) {
                     Expression expression = new ExpressionBuilder(a.get(i)).build();
                     newa.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newa.add(a.get(i));
+                    if (a.get(i).contains("*x")) {
+                        temp=a.get(i).replace("*x","*1");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newa.add(Double.toString(expression.evaluate())+"x");
+
+                    }
+                    else {
+                        temp=a.get(i).replace("x","");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newa.add(Double.toString(expression.evaluate())+"x");
+                    }
                 }
             }
             else{
@@ -420,12 +454,22 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         ArrayList<String> newb = new ArrayList<>();
         for (int i = 0; i < b.size(); i++) {
             if (b.get(i).contains("/") || b.get(i).contains("*")){
-                if (!(b.get(i).contains("x") || b.get(i).contains("X"))) {
+                if (!(b.get(i).contains("x"))) {
                     Expression expression = new ExpressionBuilder(b.get(i)).build();
                     newb.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newb.add(b.get(i));
+                    if (b.get(i).contains("*x")) {
+                        temp=b.get(i).replace("*x","*1");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newb.add(Double.toString(expression.evaluate())+"x");
+
+                    }
+                    else {
+                        temp=b.get(i).replace("x","");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newb.add(Double.toString(expression.evaluate())+"x");
+                    }
                 }
             }
             else{
