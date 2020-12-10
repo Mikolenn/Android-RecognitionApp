@@ -407,18 +407,29 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
 
     String presolve(String equation){
+        equation=equation.replaceAll("X", "x");
         String[] parts = equation.split("=");
         ArrayList<String> a = split(parts[0]);
         ArrayList<String> newa = new ArrayList<>();
         String temp;
         for (int i = 0; i < a.size(); i++) {
             if (a.get(i).contains("/") || a.get(i).contains("*")){
-                if (!(a.get(i).contains("x") || a.get(i).contains("X"))) {
+                if (!(a.get(i).contains("x"))) {
                     Expression expression = new ExpressionBuilder(a.get(i)).build();
                     newa.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newa.add(a.get(i).replace("*",""));
+                    if (a.get(i).contains("*x")) {
+                        temp=a.get(i).replace("*x","*1");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newa.add(Double.toString(expression.evaluate())+"x");
+
+                    }
+                    else {
+                        temp=a.get(i).replace("x","");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newa.add(Double.toString(expression.evaluate())+"x");
+                    }
                 }
             }
             else{
@@ -431,12 +442,22 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         ArrayList<String> newb = new ArrayList<>();
         for (int i = 0; i < b.size(); i++) {
             if (b.get(i).contains("/") || b.get(i).contains("*")){
-                if (!(b.get(i).contains("x") || b.get(i).contains("X"))) {
+                if (!(b.get(i).contains("x"))) {
                     Expression expression = new ExpressionBuilder(b.get(i)).build();
                     newb.add(Double.toString(expression.evaluate()));
                 }
                 else{
-                    newb.add(b.get(i).replace("*",""));
+                    if (b.get(i).contains("*x")) {
+                        temp=b.get(i).replace("*x","*1");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newb.add(Double.toString(expression.evaluate())+"x");
+
+                    }
+                    else {
+                        temp=b.get(i).replace("x","");
+                        Expression expression = new ExpressionBuilder(temp).build();
+                        newb.add(Double.toString(expression.evaluate())+"x");
+                    }
                 }
             }
             else{
