@@ -380,12 +380,22 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     Expression expression = new ExpressionBuilder(txt).build();
                     // Calculate the result and display
                     double result = expression.evaluate();
-                    txtDisplay.setText(Double.toString(result));
+
+                    String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
+
+                    txtDisplay.setText(translated);
+
+                    // txtDisplay.setText(Double.toString(result));
 
                 } else {
                     String equation = presolve(txt);
                     equation = newsolve(equation);
-                    txtDisplay.setText(equation);
+
+                    String translated = LaTexTranslate.translateEquation(txt, equation);
+
+                    txtDisplay.setText(translated);
+
+                    // txtDisplay.setText(equation);
                 }
             }
         });
@@ -442,38 +452,62 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 // the given equation
 
     String newsolve(String equation) {
-        String[] parts = equation.split("=");
+        String[] parts = equation.split("=", 2);
         ArrayList<String> a = split(parts[0]);
         ArrayList<String> b = split(parts[1]);
         double numvar=0;
         double num=0;
         double result;
         String tempo="";
+        String temp="";
+        String prueba="";
+
         for (int i = 0; i < a.size(); i++) {
             if ((a.get(i).contains("x") || a.get(i).contains("X"))) {
-
                 tempo=a.get(i).replace("x", "");
                 tempo=tempo.replace("X", "");
+
+                if (tempo.equals("+") || tempo.equals("")){
+                    tempo="+1";
+                    //prueba=prueba+temp;
+                }
+                else if (tempo.equals("-")) {
+                    tempo="-1";
+                    //prueba=prueba+temp;
+                }
                 numvar=numvar+Double.parseDouble(tempo);
+                //prueba = prueba + temp;
+
 
             }
             else{
-                num=num+Double.parseDouble(a.get(i));
 
+                num=num+Double.parseDouble(a.get(i));
+                prueba=prueba+a.get(i);
             }
         }
 
         for (int i = 0; i < b.size(); i++) {
             if ((b.get(i).contains("x") || b.get(i).contains("X"))) {
+                temp=b.get(i).replace("x", "");
+                temp=temp.replace("X", "");
 
-                tempo=b.get(i).replace("x", "");
-                tempo=tempo.replace("X", "");
-                numvar=numvar-Double.parseDouble(tempo);
+                if (temp.equals("+") || temp.equals("")){
+                    temp="+1";
+                    //prueba=prueba+temp;
+                }
+                else if (temp.equals("-")) {
+                    temp="-1";
+                    //prueba=prueba+temp;
+                }
+                numvar=numvar-Double.parseDouble(temp);
+                //prueba = prueba + temp;
+
 
             }
             else{
                 num=num-Double.parseDouble(b.get(i));
-
+                //prueba=prueba+b.get(i);
             }
         }
 
