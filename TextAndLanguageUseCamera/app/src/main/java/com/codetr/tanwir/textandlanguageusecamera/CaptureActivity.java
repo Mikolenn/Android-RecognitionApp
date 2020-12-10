@@ -366,7 +366,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         isEngineReady = false;
 
 
-//        hasil calculator
+        //hasil calculator
         btnEqual = (Button) findViewById(R.id.btnEqual);
         btnEqual.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -382,20 +382,14 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     double result = expression.evaluate();
 
                     String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
-
                     txtDisplay.setText(translated);
-
-                    // txtDisplay.setText(Double.toString(result));
 
                 } else {
                     String equation = presolve(txt);
                     equation = newsolve(equation);
 
                     String translated = LaTexTranslate.translateEquation(txt, equation);
-
                     txtDisplay.setText(translated);
-
-                    // txtDisplay.setText(equation);
                 }
             }
         });
@@ -422,7 +416,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         }
 
-
         ArrayList<String> b = split(parts[1]);
         ArrayList<String> newb = new ArrayList<>();
         for (int i = 0; i < b.size(); i++) {
@@ -441,15 +434,13 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         }
 
-
-
-
         return getSolution(newa,newb).replace(" ", "");
     }
 
 
-    // Function to solve
-// the given equation
+    /**
+     * Function to solve the given equation
+     */
 
     String newsolve(String equation) {
         String[] parts = equation.split("=", 2);
@@ -469,16 +460,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
                 if (tempo.equals("+") || tempo.equals("")){
                     tempo="+1";
-                    //prueba=prueba+temp;
                 }
                 else if (tempo.equals("-")) {
                     tempo="-1";
-                    //prueba=prueba+temp;
                 }
+
                 numvar=numvar+Double.parseDouble(tempo);
-                //prueba = prueba + temp;
-
-
             }
             else{
 
@@ -488,21 +475,18 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         }
 
         for (int i = 0; i < b.size(); i++) {
+
             if ((b.get(i).contains("x") || b.get(i).contains("X"))) {
                 temp=b.get(i).replace("x", "");
                 temp=temp.replace("X", "");
 
                 if (temp.equals("+") || temp.equals("")){
                     temp="+1";
-                    //prueba=prueba+temp;
                 }
                 else if (temp.equals("-")) {
                     temp="-1";
-                    //prueba=prueba+temp;
                 }
                 numvar=numvar-Double.parseDouble(temp);
-                //prueba = prueba + temp;
-
 
             }
             else{
@@ -524,12 +508,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             result=-1*(num/numvar);
             return (""+result);
         }
-
-
-
     }
-
-
 
 
     @Override
