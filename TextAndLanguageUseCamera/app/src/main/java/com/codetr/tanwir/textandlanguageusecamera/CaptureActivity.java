@@ -441,7 +441,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     /**
      * Function to solve the given equation
      */
-
     String newsolve(String equation) {
         String[] parts = equation.split("=", 2);
         ArrayList<String> a = split(parts[0]);
@@ -899,7 +898,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         if (lastResult != null) {
             handleOcrDecode(lastResult);
         } else {
-            Toast toast = Toast.makeText(this, "Kata yang diambil masih kosong", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, "The taken words still empty", Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP, 0, 0);
             toast.show();
             resumeContinuousDecoding();
@@ -954,11 +953,13 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             handler = new CaptureActivityHandler(this, cameraManager, isContinuousModeActive);
 
         } catch (IOException ioe) {
-            showErrorMessage("Error", "Could not initialize camera. Please try restarting device.");
+            showErrorMessage("Error", "Could not initialize camera. " +
+                    "Please give the permissions and restart the device.");
         } catch (RuntimeException e) {
             // Barcode Scanner has seen crashes in the wild of this variety:
             // java.?lang.?RuntimeException: Fail to connect to camera service
-            showErrorMessage("Error", "Could not initialize camera. Please try restarting device.");
+            showErrorMessage("Error", "Could not initialize camera. " +
+                    "Please give the permissions and restart the device.");
         }
     }
 
@@ -1093,14 +1094,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 showErrorMessage("Error", "Required external storage (such as an SD card) is full or unavailable.");
             }
 
-            //        } else {
-            //          // For Android 2.1 and below, explicitly give the path as, for example,
-            //          // "/mnt/sdcard/Android/data/edu.sfsu.cs.orange.ocr/files/"
-            //          return new File(Environment.getExternalStorageDirectory().toString() + File.separator +
-            //                  "Android" + File.separator + "data" + File.separator + getPackageName() +
-            //                  File.separator + "files" + File.separator);
-            //        }
-
         } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             // We can only read the media
             Log.e(TAG, "External storage is read-only");
@@ -1158,12 +1151,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         // Display the name of the OCR engine we're initializing in the indeterminate progress dialog box
         indeterminateDialog = new ProgressDialog(this);
-        indeterminateDialog.setTitle("Tunggu Sebentar");
+        indeterminateDialog.setTitle("Wait a moment...");
         String ocrEngineModeName = getOcrEngineModeName();
         if (ocrEngineModeName.equals("Both")) {
-            indeterminateDialog.setMessage("Pemasangan data " + languageName + "...");
+            indeterminateDialog.setMessage("Installing data " + languageName + "...");
         } else {
-            indeterminateDialog.setMessage("Pemasangan data " + languageName + "...");
+            indeterminateDialog.setMessage("Installing data " + languageName + "...");
         }
         indeterminateDialog.setCancelable(false);
         indeterminateDialog.show();
@@ -1198,7 +1191,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         // Test whether the result is null
         if (ocrResult.getText() == null || ocrResult.getText().equals("")) {
-            Toast toast = Toast.makeText(this, "Kata yang diambil masih kosong", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, "The taken words still empty", Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP, 0, 0);
             toast.show();
             return false;
@@ -1540,12 +1533,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     void displayProgressDialog() {
         // Set up the indeterminate progress dialog box
         indeterminateDialog = new ProgressDialog(this);
-        indeterminateDialog.setTitle("Tunggu Sebentar");
+        indeterminateDialog.setTitle("Wait a moment");
         String ocrEngineModeName = getOcrEngineModeName();
         if (ocrEngineModeName.equals("Both")) {
-            indeterminateDialog.setMessage("Menjalankan data menggunakan Tesseract...");
+            indeterminateDialog.setMessage("Running data using Tesseract...");
         } else {
-            indeterminateDialog.setMessage("Menjalankan data menggunakan " + ocrEngineModeName + "...");
+            indeterminateDialog.setMessage("Running data using " + ocrEngineModeName + "...");
         }
         indeterminateDialog.setCancelable(false);
         indeterminateDialog.show();
