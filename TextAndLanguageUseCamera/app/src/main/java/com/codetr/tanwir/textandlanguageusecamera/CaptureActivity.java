@@ -69,7 +69,7 @@ import net.objecthunter.exp4j.ExpressionBuilder;
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
  * viewfinder to help the user place the text correctly, shows feedback as the image processing
  * is happening, and then overlays the results when a scan is successful.
- * <p>
+ * 
  * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing/
  */
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback,
@@ -219,7 +219,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     private boolean isEngineReady;
     private boolean isPaused;
     private static boolean isFirstLaunch; // True if this is the first time the app is being run
-
     private Button btnEqual;
     private TextView txtDisplay;
 
@@ -362,20 +361,23 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         btnEqual.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Used to show the end result on the screen
                 txtDisplay = (TextView) findViewById(R.id.txtDisplay);
                 // Read the expression
                 String txt = ocrResultView.getText().toString();
 
+                // Case for the mathematical expressions
                 if(!(txt.contains("="))){
                     try {
 
                         // Create an Expression (A class from exp4j library)
                         Expression expression = new ExpressionBuilder(txt).build();
-                        // Calculate the result and display
+                        // Calculate the result
                         double result = expression.evaluate();
 
-                        // LaTex translation
+                        // LaTex translation and build of the string to be shown
                         String translated = LaTexTranslate.translateEquation(txt, Double.toString(result));
+                        // Display the LaTex code
                         txtDisplay.setText(translated);
 
                         // Copy the LaTex plain text to the clipboard
@@ -388,14 +390,16 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                         txtDisplay.setText("Error");
                     }
 
-                } else {
+                } else {    // Case for the mathematical equations
                     try {
-                        // Solve the given equation
+                        // Prepare the given equation to be solved
                         String equation = presolve(txt);
+                        // Solve the prepared equation
                         equation = newsolve(equation);
 
-                        // LaTex translation
+                        // LaTex translation and build of the string to be shown
                         String translated = LaTexTranslate.translateEquation(txt, equation);
+                        // Display the LaTex code
                         txtDisplay.setText(translated);
 
                         // Copy the LaTex plain text to the clipboard
@@ -416,11 +420,17 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
      * Function to prepare the given equation to be solved
      */
     String presolve(String equation){
+
+        // Homogenize the read variable
         equation=equation.replaceAll("X", "x");
+        // Split the equation using the "="
         String[] parts = equation.split("=");
+        // Takes the left side of the equation
         ArrayList<String> a = split(parts[0]);
         ArrayList<String> newa = new ArrayList<>();
         String temp;
+
+        // Reduces the values around the variable
         for (int i = 0; i < a.size(); i++) {
             if (a.get(i).contains("/") || a.get(i).contains("*")){
                 if (!(a.get(i).contains("x"))) {
@@ -444,11 +454,13 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             else{
                 newa.add(a.get(i));
             }
-
         }
 
+        // Takes the right side of the equation
         ArrayList<String> b = split(parts[1]);
         ArrayList<String> newb = new ArrayList<>();
+
+        // Reduces the values around the variable
         for (int i = 0; i < b.size(); i++) {
             if (b.get(i).contains("/") || b.get(i).contains("*")){
                 if (!(b.get(i).contains("x"))) {
@@ -482,6 +494,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
      * Function to solve the given equation
      */
     String newsolve(String equation) {
+        // Split the equation using the "="
         String[] parts = equation.split("=", 2);
         ArrayList<String> a = split(parts[0]);
         ArrayList<String> b = split(parts[1]);
@@ -492,6 +505,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         String temp="";
         String prueba="";
 
+        // Solve the left sida of the equation
         for (int i = 0; i < a.size(); i++) {
             if ((a.get(i).contains("x") || a.get(i).contains("X"))) {
                 tempo=a.get(i).replace("x", "");
@@ -512,7 +526,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 prueba=prueba+a.get(i);
             }
         }
-
+        // Solve the right sida of the equation
         for (int i = 0; i < b.size(); i++) {
 
             if ((b.get(i).contains("x") || b.get(i).contains("X"))) {
@@ -533,6 +547,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             }
         }
 
+        // Determine if the equation does not has coherent solution
         if (numvar==0) {
             if (num==0){
                 return("Soluciones infinitas");
@@ -541,6 +556,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 return("Sin solucion");
             }
         }
+        // Divide by the constant of "x" and calculates the solution with the calculated values
         else{
             result=-1*(num/numvar);
             return (""+result);
